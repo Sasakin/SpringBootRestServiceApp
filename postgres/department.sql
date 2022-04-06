@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS department
+(
+    id     INTEGER NOT NULL CONSTRAINT department_pkey PRIMARY KEY,
+    name   VARCHAR(80) NOT NULL CONSTRAINT idx_department_name UNIQUE,
+    closed BOOLEAN DEFAULT FALSE NOT NULL
+);

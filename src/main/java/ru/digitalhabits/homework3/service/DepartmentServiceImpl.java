@@ -1,57 +1,96 @@
 package ru.digitalhabits.homework3.service;
 
-import org.apache.commons.lang3.NotImplementedException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+import ru.digitalhabits.homework3.builder.DepartmentBuilder;
+import ru.digitalhabits.homework3.dao.DepartmentDao;
+import ru.digitalhabits.homework3.dao.PersonDao;
+import ru.digitalhabits.homework3.domain.Department;
+import ru.digitalhabits.homework3.domain.Person;
 import ru.digitalhabits.homework3.model.DepartmentFullResponse;
 import ru.digitalhabits.homework3.model.DepartmentRequest;
 import ru.digitalhabits.homework3.model.DepartmentShortResponse;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class DepartmentServiceImpl
         implements DepartmentService {
 
+    @Autowired
+    private DepartmentBuilder converter;
+
+    @Autowired
+    private DepartmentDao departmentDao;
+
+    @Autowired
+    private PersonDao personDao;
+
     @Nonnull
     @Override
     @Transactional(readOnly = true)
     public List<DepartmentShortResponse> findAll() {
-        // TODO: NotImplemented: получение краткой информации о всех департаментах
-        throw new NotImplementedException();
+        return departmentDao.findAll().stream().map(converter::buildResponseShort).collect(Collectors.toList());
     }
 
     @Nonnull
     @Override
     @Transactional(readOnly = true)
     public DepartmentFullResponse getById(int id) {
-        // TODO: NotImplemented: получение подробной информации о департаменте и краткой информации о людях в нем.
-        //  Если не найдено, отдавать 404:NotFound
-        throw new NotImplementedException();
+        Optional<DepartmentFullResponse> resp = Optional.of(departmentDao.findById(id))
+                .map(converter::buildResponseFull);
+        if (resp.isPresent()) {
+            return resp.get();
+        }
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Department not found");
     }
 
     @Override
     @Transactional
     public int create(@Nonnull DepartmentRequest request) {
-        // TODO: NotImplemented: создание нового департамента
-        throw new NotImplementedException();
+        Department create = converter.buildFromRequest(request);
+        departmentDao.create(create);
+        return create.getId();
     }
 
     @Nonnull
     @Override
     @Transactional
     public DepartmentFullResponse update(int id, @Nonnull DepartmentRequest request) {
-        // TODO: NotImplemented: обновление данных о департаменте. Если не найдено, отдавать 404:NotFound
-        throw new NotImplementedException();
+        Department fromBD = departmentDao.findById(id);
+        if(fromBD == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Department not found");
+        }
+
+        fromBD.setName(request.getName());
+
+        departmentDao.update(fromBD);
+
+        return converter.buildResponseFull(fromBD);
     }
 
     @Override
     @Transactional
     public void delete(int id) {
-        // TODO: NotImplemented: удаление всех людей из департамента и удаление самого департамента.
-        //  Если не найдено, то ничего не делать
-        throw new NotImplementedException();
+        Department department = departmentDao.findById(id);
+        if (department == null) {
+            return;
+        }
+
+        List<Person> persons = department.getPersons();
+        persons.forEach(person -> {
+            person.setDepartment(null);
+            personDao.update(person);
+        });
+
+        departmentDao.delete(id);
     }
 
     @Override
@@ -59,6 +98,19 @@ public class DepartmentServiceImpl
     public void close(int id) {
         // TODO: NotImplemented: удаление всех людей из департамента и установка отметки на департаменте,
         //  что он закрыт для добавления новых людей. Если не найдено, отдавать 404:NotFound
-        throw new NotImplementedException();
+        Department department = departmentDao.findById(id);
+        if (department == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Department not found");
+        }
+
+        List<Person> persons = department.getPersons();
+        persons.forEach(person -> {
+            person.setDepartment(null);
+            personDao.update(person);
+        });
+
+        department.setPersons(new ArrayList<>());
+        department.setClosed(true);
+        departmentDao.update(department);
     }
 }
