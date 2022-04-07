@@ -10,7 +10,7 @@ import java.util.List;
 public interface CrudOperations<T, ID> {
 
     @Nonnull
-    void create(@Nonnull T entity);
+    int create(@Nonnull T entity);
 
     @Nullable
     T findById(@Nonnull ID id);

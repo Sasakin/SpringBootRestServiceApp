@@ -22,6 +22,11 @@ public class Department {
     @Column(name = "closed")
     private Boolean closed;
 
-    @OneToMany(mappedBy = "department")
+    @OneToMany(mappedBy = "department", fetch = FetchType.EAGER)
     private List<Person> persons;
+
+
+    public boolean isClosed() {
+        return closed;
+    }
 }

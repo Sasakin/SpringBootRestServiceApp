@@ -18,8 +18,9 @@ public class PersonDaoImpl
 
     @Nonnull
     @Override
-    public void create(@Nonnull Person entity) {
+    public int create(@Nonnull Person entity) {
         entityManager.persist(entity);
+        return entity.getId();
     }
 
     @Nullable

@@ -1,5 +1,6 @@
 package ru.digitalhabits.homework3.dao;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -77,27 +78,6 @@ class DepartmentDaoTest {
         Department delleted = departmentDao.findById(created.getId());
 
         assert delleted == null;
-
-    }
-
-
-    @Test
-    void departmentWithPersons() {
-        Department created = entityManager.persist(new Department().setName("VMF").setClosed(false));
-
-        entityManager.persist(new Person()
-                .setFirstName("Andrey").setMiddleName("Evgenievich")
-                .setLastName("Stepanov").setAge(10).setDepartment(created));
-        entityManager.persist(new Person()
-                .setFirstName("Grigori").setMiddleName("Ivanovich")
-                .setLastName("Razanov").setAge(20).setDepartment(created));
-        entityManager.persist(new Person()
-                .setFirstName("Petr").setMiddleName("Felemonovich")
-                .setLastName("Laysan").setAge(30).setDepartment(created));
-
-        Department checked = departmentDao.findById(created.getId());
-
-        assert checked.getPersons().size() == 3;
 
     }
 

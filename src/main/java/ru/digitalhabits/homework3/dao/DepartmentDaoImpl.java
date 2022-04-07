@@ -18,8 +18,9 @@ public class DepartmentDaoImpl
 
     @Nonnull
     @Override
-    public void create(@Nonnull Department entity) {
+    public int create(@Nonnull Department entity) {
         entityManager.persist(entity);
+        return entity.getId();
     }
 
     @Nullable

@@ -26,4 +26,9 @@ public class Person {
     @ManyToOne(targetEntity = Department.class)
     @JoinColumn(name = "department_id")
     private Department department;
+
+
+    public String getFullName() {
+        return String.format("%s %s %s", lastName, firstName, middleName);
+    }
 }

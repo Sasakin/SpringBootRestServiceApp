@@ -1,10 +1,8 @@
 package ru.digitalhabits.homework3.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 import ru.digitalhabits.homework3.builder.DepartmentBuilder;
 import ru.digitalhabits.homework3.dao.DepartmentDao;
 import ru.digitalhabits.homework3.dao.PersonDao;
@@ -15,6 +13,7 @@ import ru.digitalhabits.homework3.model.DepartmentRequest;
 import ru.digitalhabits.homework3.model.DepartmentShortResponse;
 
 import javax.annotation.Nonnull;
+import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,7 +24,7 @@ public class DepartmentServiceImpl
         implements DepartmentService {
 
     @Autowired
-    private DepartmentBuilder converter;
+    private DepartmentBuilder builder;
 
     @Autowired
     private DepartmentDao departmentDao;
@@ -37,27 +36,26 @@ public class DepartmentServiceImpl
     @Override
     @Transactional(readOnly = true)
     public List<DepartmentShortResponse> findAll() {
-        return departmentDao.findAll().stream().map(converter::buildResponseShort).collect(Collectors.toList());
+        return departmentDao.findAll().stream().map(builder::buildResponseShort).collect(Collectors.toList());
     }
 
     @Nonnull
     @Override
     @Transactional(readOnly = true)
     public DepartmentFullResponse getById(int id) {
-        Optional<DepartmentFullResponse> resp = Optional.of(departmentDao.findById(id))
-                .map(converter::buildResponseFull);
+        Optional<DepartmentFullResponse> resp = Optional.ofNullable(departmentDao.findById(id))
+                .map(builder::buildResponseFull);
         if (resp.isPresent()) {
             return resp.get();
         }
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Department not found");
+        throw new EntityNotFoundException("Department not found");
     }
 
     @Override
     @Transactional
     public int create(@Nonnull DepartmentRequest request) {
-        Department create = converter.buildFromRequest(request);
-        departmentDao.create(create);
-        return create.getId();
+        Department create = builder.buildFromRequest(request);
+        return departmentDao.create(create);
     }
 
     @Nonnull
@@ -66,14 +64,14 @@ public class DepartmentServiceImpl
     public DepartmentFullResponse update(int id, @Nonnull DepartmentRequest request) {
         Department fromBD = departmentDao.findById(id);
         if(fromBD == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Department not found");
+            throw new EntityNotFoundException("Department not found");
         }
 
         fromBD.setName(request.getName());
 
         departmentDao.update(fromBD);
 
-        return converter.buildResponseFull(fromBD);
+        return builder.buildResponseFull(fromBD);
     }
 
     @Override
@@ -85,10 +83,12 @@ public class DepartmentServiceImpl
         }
 
         List<Person> persons = department.getPersons();
-        persons.forEach(person -> {
-            person.setDepartment(null);
-            personDao.update(person);
-        });
+        if(persons != null) {
+            persons.forEach(person -> {
+                person.setDepartment(null);
+                personDao.update(person);
+            });
+        }
 
         departmentDao.delete(id);
     }
@@ -100,14 +100,16 @@ public class DepartmentServiceImpl
         //  что он закрыт для добавления новых людей. Если не найдено, отдавать 404:NotFound
         Department department = departmentDao.findById(id);
         if (department == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Department not found");
+            throw new EntityNotFoundException("Department not found");
         }
 
         List<Person> persons = department.getPersons();
-        persons.forEach(person -> {
-            person.setDepartment(null);
-            personDao.update(person);
-        });
+        if(persons != null) {
+            persons.forEach(person -> {
+                person.setDepartment(null);
+                personDao.update(person);
+            });
+        }
 
         department.setPersons(new ArrayList<>());
         department.setClosed(true);
