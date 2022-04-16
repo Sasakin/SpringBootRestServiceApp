@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
@@ -21,7 +22,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest
-@ComponentScan("ru.digitalhabits.homework3.service")
+@AutoConfigureTestDatabase
 class DepartmentServiceTest {
 
     @Autowired
