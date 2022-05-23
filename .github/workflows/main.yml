@@ -37,8 +37,8 @@ jobs:
         with:
           # TODO прописать свой API_KEY из heroku
           heroku_api_key: token
-          heroku_app_name: homework3-app
-          heroku_email: romanowalex@mail.ru
+          heroku_app_name: departmentcrudapp
+          heroku_email: max_to_day@mail.ru
           usedocker: true
 
       - name: Run API Tests
