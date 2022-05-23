@@ -88,8 +88,3 @@ docker compose up -d postgres
    нужно импортировать в Postman коллекцию [homework3.postman_collection.json](postman/homework3.postman_collection.json) и
    environment [[local] digital-habits.postman_environment.json](postman/%5Blocal%5D%20digital-habits.postman_environment.json).
 
-##  Как сдавать?
-* Fork этого репозитория
-* Merge request вашей реализации в этот репозиторий
-
-## Дедлайн
